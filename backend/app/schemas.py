@@ -46,3 +46,27 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class MatchRequest(BaseModel):
+    job_description: str = Field(min_length=30)
+    resume_text: str = Field(min_length=30)
+
+
+class MatchResult(BaseModel):
+    required_skills: list[str]
+    matched_skills: list[str]
+    missing_skills: list[str]
+    match_score: int = Field(ge=0, le=100)
+    suggestions: list[str]
+
+class MatchRequest(BaseModel):
+    job_description: str = Field(min_length=30)
+    resume_text: str = Field(min_length=30)
+
+
+class MatchResult(BaseModel):
+    required_skills: list[str]
+    matched_skills: list[str]
+    missing_skills: list[str]
+    match_score: int = Field(ge=0, le=100)
+    suggestions: list[str]
