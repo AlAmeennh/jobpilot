@@ -1,5 +1,5 @@
 # JobPilot
-
+![Tests](https://github.com/AlAmeennh/jobpilot/actions/workflows/tests.yml/badge.svg)
 An AI-assisted job application tracker. Keep every application in one place, and paste a job description to see which skills you match and which you're missing.
 
 > **Status:** In active development. Built solo as a learning project and for my own job search.
