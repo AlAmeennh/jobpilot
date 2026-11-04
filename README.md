@@ -1,4 +1,5 @@
 # JobPilot
+
 ![Tests](https://github.com/AlAmeennh/jobpilot/actions/workflows/tests.yml/badge.svg)
 An AI-assisted job application tracker. Keep every application in one place, and paste a job description to see which skills you match and which you're missing.
 
@@ -6,7 +7,6 @@ An AI-assisted job application tracker. Keep every application in one place, and
 
 **Live demo:** _coming soon_
 
-![JobPilot screenshot](docs/screenshot.png)
 <!-- Replace with a real screenshot or GIF once the UI is working -->
 
 ## Why I built this
@@ -16,30 +16,32 @@ I'm a final-year CSE student applying for software roles off-campus. Spreadsheet
 ## Features
 
 **Planned for v1**
-- [ ] Sign up and log in (JWT authentication)
-- [ ] Add, edit, delete and filter job applications
-- [ ] Track status: Applied, Interview, Offer, Rejected
-- [ ] Dashboard with simple stats (applications per status, per week)
-- [ ] AI resume matcher: paste a job description and get matched skills, missing skills and suggestions
-- [ ] Each user only sees their own data
 
-**Later**
+- [x] Sign up and log in (JWT authentication)
+- [x] Add, edit, delete and filter job applications
+- [x] Track status: Applied, Interview, Offer, Rejected
+- [x] Dashboard with simple stats (applications per status, per week)
+- [x] AI resume matcher: paste a job description and get matched skills, missing skills and suggestions
+- [x] Each user only sees their own data
+
+      **Later**
+
 - [ ] Reminders for follow-ups
 - [ ] Export to CSV
 - [ ] Docker setup (`docker compose up`)
-- [ ] CI with GitHub Actions
+- [x] CI with GitHub Actions
 
 ## Tech stack
 
-| Layer      | Technology                         |
-|------------|------------------------------------|
-| Backend    | Python, FastAPI                    |
-| Database   | SQLite (SQLAlchemy)                |
-| Auth       | JWT                                |
-| AI         | Gemini API                         |
-| Frontend   | React, Vite, Tailwind CSS          |
-| Testing    | pytest                             |
-| Deployment | Render (backend), Vercel (frontend)|
+| Layer      | Technology                          |
+| ---------- | ----------------------------------- |
+| Backend    | Python, FastAPI                     |
+| Database   | SQLite (SQLAlchemy)                 |
+| Auth       | JWT                                 |
+| AI         | Gemini API                          |
+| Frontend   | React, Vite, Tailwind CSS           |
+| Testing    | pytest                              |
+| Deployment | Render (backend), Vercel (frontend) |
 
 ## Project structure
 
@@ -84,10 +86,10 @@ API docs: http://localhost:8000/docs
 
 ### Environment variables
 
-| Variable         | Purpose                           |
-|------------------|-----------------------------------|
-| `GEMINI_API_KEY` | Powers the resume matcher         |
-| `SECRET_KEY`     | Signs JWT tokens                  |
+| Variable         | Purpose                   |
+| ---------------- | ------------------------- |
+| `GEMINI_API_KEY` | Powers the resume matcher |
+| `SECRET_KEY`     | Signs JWT tokens          |
 
 ### Frontend
 
