@@ -1,14 +1,14 @@
 import json
 import os
+import time
 
 from dotenv import load_dotenv
 from google import genai
+from google.genai import errors
 
 load_dotenv()
 
-# Model names change over time. If this one stops working, check Google AI Studio
-# for a current name and set GEMINI_MODEL in .env.
-MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
 PROMPT = """You are a technical recruiter. Compare the resume with the job description.
 Return ONLY JSON with exactly this shape:
@@ -29,6 +29,8 @@ RESUME:
 <<RESUME>>
 """
 
+MAX_ATTEMPTS = 3
+
 
 def analyze_match(job_description: str, resume_text: str) -> dict:
     api_key = os.getenv("GEMINI_API_KEY")
@@ -37,9 +39,17 @@ def analyze_match(job_description: str, resume_text: str) -> dict:
 
     client = genai.Client(api_key=api_key)
     prompt = PROMPT.replace("<<JD>>", job_description).replace("<<RESUME>>", resume_text)
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config={"response_mime_type": "application/json"},
-    )
-    return json.loads(response.text)
+
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        try:
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+                config={"response_mime_type": "application/json"},
+            )
+            return json.loads(response.text)
+        except errors.ServerError:
+            # Google is busy (503 etc.). Wait a little, then try again.
+            if attempt == MAX_ATTEMPTS:
+                raise
+            time.sleep(2 * attempt)

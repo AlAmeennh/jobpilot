@@ -1,8 +1,12 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 
 from .. import models, schemas
 from ..auth import get_current_user
 from ..services import ai_matcher
+
+logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter(prefix="/matcher", tags=["matcher"])
 
@@ -18,4 +22,5 @@ def match(
     except RuntimeError:
         raise HTTPException(status_code=503, detail="AI service is not configured")
     except Exception:
+        logger.exception("Matcher failed")
         raise HTTPException(status_code=502, detail="AI service failed, please try again")
