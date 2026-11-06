@@ -86,10 +86,11 @@ API docs: http://localhost:8000/docs
 
 ### Environment variables
 
-| Variable         | Purpose                   |
-| ---------------- | ------------------------- |
-| `GEMINI_API_KEY` | Powers the resume matcher |
-| `SECRET_KEY`     | Signs JWT tokens          |
+| Variable         | Required | Purpose                                                |
+| ---------------- | -------- | ------------------------------------------------------ |
+| `SECRET_KEY`     | Yes      | Signs JWT tokens                                       |
+| `GEMINI_API_KEY` | Yes      | Powers the resume matcher                              |
+| `GEMINI_MODEL`   | No       | Gemini model to use (default: `gemini-3.5-flash-lite`) |
 
 ### Frontend
 
