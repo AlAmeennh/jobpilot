@@ -8,7 +8,7 @@ from google.genai import errors
 
 load_dotenv()
 
-MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 PROMPT = """You are a technical recruiter. Compare the resume with the job description.
 Return ONLY JSON with exactly this shape:
