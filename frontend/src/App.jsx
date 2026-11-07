@@ -1,12 +1,27 @@
-function App() {
-  return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-xl shadow">
-        <h1 className="text-3xl font-bold text-indigo-600">JobPilot</h1>
-        <p className="text-slate-600 mt-2">Frontend is working.</p>
-      </div>
-    </div>
-  )
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import AuthPage from "./pages/AuthPage";
+import Dashboard from "./pages/Dashboard";
+import { getToken } from "./api";
+
+function Protected({ children }) {
+  return getToken() ? children : <Navigate to="/login" replace />;
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<AuthPage />} />
+        <Route
+          path="/"
+          element={
+            <Protected>
+              <Dashboard />
+            </Protected>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
