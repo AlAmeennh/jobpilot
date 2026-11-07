@@ -14,6 +14,13 @@ async function request(path, options = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
 
   const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+  if (res.status === 401 && token) {
+    // Login expired: go back to the login page
+    clearToken();
+    window.location.href = "/login";
+    throw new Error("Session expired, please log in again");
+  }
   if (res.status === 204) return null;
 
   const data = await res.json().catch(() => null);
@@ -28,10 +35,12 @@ async function request(path, options = {}) {
   return data;
 }
 
+const jsonHeaders = { "Content-Type": "application/json" };
+
 export function signup(email, password) {
   return request("/auth/signup", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: jsonHeaders,
     body: JSON.stringify({ email, password }),
   });
 }
@@ -46,4 +55,29 @@ export async function login(email, password) {
   });
   localStorage.setItem("token", data.access_token);
   return data;
+}
+
+export function listApplications(status) {
+  const query = status ? `?status=${encodeURIComponent(status)}` : "";
+  return request(`/applications${query}`);
+}
+
+export function createApplication(data) {
+  return request("/applications", {
+    method: "POST",
+    headers: jsonHeaders,
+    body: JSON.stringify(data),
+  });
+}
+
+export function updateApplication(id, data) {
+  return request(`/applications/${id}`, {
+    method: "PATCH",
+    headers: jsonHeaders,
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteApplication(id) {
+  return request(`/applications/${id}`, { method: "DELETE" });
 }
