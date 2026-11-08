@@ -26,11 +26,10 @@ async function request(path, options = {}) {
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const detail = data?.detail;
-    throw new Error(
-      typeof detail === "string"
-        ? detail
-        : "Please check your input (password needs at least 8 characters)",
-    );
+    let message = "Please check your input";
+    if (typeof detail === "string") message = detail;
+    else if (Array.isArray(detail) && detail[0]?.msg) message = detail[0].msg;
+    throw new Error(message);
   }
   return data;
 }
@@ -92,4 +91,12 @@ export function matchResume(job_description, resume_text) {
 
 export function getStats() {
   return request("/applications/stats");
+}
+
+export function matchResumePdf(job_description, file) {
+  const form = new FormData();
+  form.append("job_description", job_description);
+  form.append("resume", file);
+  // No Content-Type header here: the browser sets it for file uploads
+  return request("/matcher/upload", { method: "POST", body: form });
 }

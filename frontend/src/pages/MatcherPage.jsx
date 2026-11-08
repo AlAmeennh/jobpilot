@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { matchResume } from "../api";
+import { matchResume, matchResumePdf } from "../api";
+
+const MAX_PDF_MB = 5;
 
 function SkillList({ title, skills, color }) {
   return (
@@ -22,25 +24,58 @@ function SkillList({ title, skills, color }) {
 }
 
 export default function MatcherPage() {
+  const [mode, setMode] = useState("pdf");
   const [jd, setJd] = useState("");
-  const [resume, setResume] = useState("");
+  const [resumeText, setResumeText] = useState("");
+  const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function handleFile(e) {
+    const picked = e.target.files[0];
+    setError("");
+    if (!picked) {
+      setFile(null);
+      return;
+    }
+    if (picked.size > MAX_PDF_MB * 1024 * 1024) {
+      setError(`PDF is too large (max ${MAX_PDF_MB} MB)`);
+      setFile(null);
+      e.target.value = "";
+      return;
+    }
+    setFile(picked);
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setResult(null);
+
+    if (mode === "pdf" && !file) {
+      setError("Please choose a PDF file");
+      return;
+    }
+
     setLoading(true);
     try {
-      setResult(await matchResume(jd, resume));
+      const data =
+        mode === "pdf"
+          ? await matchResumePdf(jd, file)
+          : await matchResume(jd, resumeText);
+      setResult(data);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   }
+
+  const tabClass = (active) =>
+    `px-3 py-1 rounded-lg text-sm font-medium ${
+      active ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700"
+    }`;
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 sm:p-8">
@@ -70,20 +105,55 @@ export default function MatcherPage() {
               className="w-full border border-slate-300 rounded-lg px-3 py-2"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Your resume text
-            </label>
-            <textarea
-              value={resume}
-              onChange={(e) => setResume(e.target.value)}
-              required
-              minLength={30}
-              rows={6}
-              placeholder="Paste your resume text here (at least 30 characters)"
-              className="w-full border border-slate-300 rounded-lg px-3 py-2"
-            />
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-medium text-slate-700 mr-2">
+                Your resume
+              </span>
+              <button
+                type="button"
+                onClick={() => setMode("pdf")}
+                className={tabClass(mode === "pdf")}
+              >
+                Upload PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => setMode("text")}
+                className={tabClass(mode === "text")}
+              >
+                Paste text
+              </button>
+            </div>
+
+            {mode === "pdf" ? (
+              <div>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={handleFile}
+                  className="block w-full text-sm text-slate-600 border border-slate-300 rounded-lg p-2"
+                />
+                <p className="text-xs text-slate-500 mt-1">
+                  Text-based PDF, up to {MAX_PDF_MB} MB. The text is sent to
+                  Google's Gemini for analysis, and the file itself is not
+                  stored.
+                </p>
+              </div>
+            ) : (
+              <textarea
+                value={resumeText}
+                onChange={(e) => setResumeText(e.target.value)}
+                required
+                minLength={30}
+                rows={6}
+                placeholder="Paste your resume text here (at least 30 characters)"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2"
+              />
+            )}
           </div>
+
           <button
             disabled={loading}
             className="bg-indigo-600 text-white rounded-lg px-4 py-2 font-medium hover:bg-indigo-700 disabled:opacity-50"
