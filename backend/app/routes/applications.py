@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from .. import models, schemas
 from ..auth import get_current_user
@@ -40,6 +41,22 @@ def list_applications(
     if status:
         query = query.filter(models.Application.status == status)
     return query.order_by(models.Application.id.desc()).all()
+
+@router.get("/stats", response_model=schemas.StatsOut)
+def application_stats(
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    rows = (
+        db.query(models.Application.status, func.count(models.Application.id))
+        .filter(models.Application.owner_id == user.id)
+        .group_by(models.Application.status)
+        .all()
+    )
+    by_status = {s: 0 for s in ("Applied", "Interview", "Offer", "Rejected")}
+    for status, count in rows:
+        by_status[status] = count
+    return {"total": sum(by_status.values()), "by_status": by_status}
 
 
 @router.get("/{application_id}", response_model=schemas.ApplicationOut)

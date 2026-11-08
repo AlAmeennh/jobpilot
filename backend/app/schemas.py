@@ -70,3 +70,7 @@ class MatchResult(BaseModel):
     missing_skills: list[str]
     match_score: int = Field(ge=0, le=100)
     suggestions: list[str]
+
+class StatsOut(BaseModel):
+    total: int
+    by_status: dict[str, int]

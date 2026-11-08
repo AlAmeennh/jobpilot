@@ -116,3 +116,21 @@ def test_matcher_returns_result(monkeypatch):
     assert r.status_code == 200
     assert r.json()["match_score"] == 70
     assert r.json()["missing_skills"] == ["SQL"]
+
+def test_stats_counts_by_status():
+    h = auth_headers()
+    client.post("/applications", json={"company": "A", "role": "Dev"}, headers=h)
+    client.post("/applications", json={"company": "B", "role": "Dev", "status": "Interview"}, headers=h)
+    r = client.get("/applications/stats", headers=h)
+    assert r.status_code == 200
+    assert r.json()["total"] == 2
+    assert r.json()["by_status"]["Applied"] == 1
+    assert r.json()["by_status"]["Interview"] == 1
+    assert r.json()["by_status"]["Offer"] == 0
+
+
+def test_stats_only_counts_own_applications():
+    h1 = auth_headers("one@example.com")
+    h2 = auth_headers("two@example.com")
+    client.post("/applications", json={"company": "A", "role": "Dev"}, headers=h1)
+    assert client.get("/applications/stats", headers=h2).json()["total"] == 0
