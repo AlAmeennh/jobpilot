@@ -1,4 +1,8 @@
+import io
+
+
 import pytest
+from pypdf import PdfWriter
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -7,6 +11,7 @@ from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.database import Base, get_db
 from app.services import ai_matcher
+from app.services import ai_matcher, pdf_reader
 
 # A separate in-memory database, so tests never touch jobpilot.db
 engine = create_engine(
@@ -134,3 +139,68 @@ def test_stats_only_counts_own_applications():
     h2 = auth_headers("two@example.com")
     client.post("/applications", json={"company": "A", "role": "Dev"}, headers=h1)
     assert client.get("/applications/stats", headers=h2).json()["total"] == 0
+
+def blank_pdf_bytes():
+    writer = PdfWriter()
+    writer.add_blank_page(width=200, height=200)
+    buf = io.BytesIO()
+    writer.write(buf)
+    return buf.getvalue()
+
+
+JD = "x" * 40
+
+
+def test_pdf_upload_requires_login():
+    r = client.post(
+        "/matcher/upload",
+        data={"job_description": JD},
+        files={"resume": ("cv.pdf", b"%PDF-1.4", "application/pdf")},
+    )
+    assert r.status_code == 401
+
+
+def test_pdf_upload_rejects_non_pdf():
+    h = auth_headers()
+    r = client.post(
+        "/matcher/upload",
+        data={"job_description": JD},
+        files={"resume": ("cv.txt", b"hello world", "text/plain")},
+        headers=h,
+    )
+    assert r.status_code == 400
+
+
+def test_pdf_upload_rejects_pdf_without_text():
+    h = auth_headers()
+    r = client.post(
+        "/matcher/upload",
+        data={"job_description": JD},
+        files={"resume": ("cv.pdf", blank_pdf_bytes(), "application/pdf")},
+        headers=h,
+    )
+    assert r.status_code == 422
+
+
+def test_pdf_upload_returns_result(monkeypatch):
+    monkeypatch.setattr(pdf_reader, "extract_text", lambda data: "Python and FastAPI developer " * 3)
+
+    def fake_analyze(job_description, resume_text):
+        return {
+            "required_skills": ["Python"],
+            "matched_skills": ["Python"],
+            "missing_skills": [],
+            "match_score": 90,
+            "suggestions": [],
+        }
+
+    monkeypatch.setattr(ai_matcher, "analyze_match", fake_analyze)
+    h = auth_headers()
+    r = client.post(
+        "/matcher/upload",
+        data={"job_description": JD},
+        files={"resume": ("cv.pdf", b"%PDF-1.4 fake", "application/pdf")},
+        headers=h,
+    )
+    assert r.status_code == 200
+    assert r.json()["match_score"] == 90
