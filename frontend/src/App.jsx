@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthPage from "./pages/AuthPage";
 import Dashboard from "./pages/Dashboard";
+import MatcherPage from "./pages/MatcherPage";
 import { getToken } from "./api";
 
 function Protected({ children }) {
@@ -17,6 +18,14 @@ export default function App() {
           element={
             <Protected>
               <Dashboard />
+            </Protected>
+          }
+        />
+        <Route
+          path="/matcher"
+          element={
+            <Protected>
+              <MatcherPage />
             </Protected>
           }
         />

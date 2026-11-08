@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import StatsBar from "../components/StatsBar";
 import {
   clearToken,
   listApplications,
@@ -23,6 +24,7 @@ export default function Dashboard() {
   const [filter, setFilter] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [version, setVersion] = useState(0);
 
   const [company, setCompany] = useState("");
   const [role, setRole] = useState("");
@@ -31,6 +33,7 @@ export default function Dashboard() {
   async function load(statusFilter = filter) {
     try {
       setApps(await listApplications(statusFilter));
+      setVersion((v) => v + 1);
       setError("");
     } catch (err) {
       setError(err.message);
@@ -94,14 +97,23 @@ export default function Dashboard() {
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-indigo-600">JobPilot</h1>
-          <button
-            onClick={logout}
-            className="text-sm text-slate-600 hover:underline"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/matcher"
+              className="text-sm text-indigo-600 hover:underline"
+            >
+              Resume matcher
+            </Link>
+            <button
+              onClick={logout}
+              className="text-sm text-slate-600 hover:underline"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
+        <StatsBar version={version} />
         <form
           onSubmit={handleAdd}
           className="bg-white p-6 rounded-xl shadow space-y-3"

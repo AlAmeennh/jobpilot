@@ -81,3 +81,15 @@ export function updateApplication(id, data) {
 export function deleteApplication(id) {
   return request(`/applications/${id}`, { method: "DELETE" });
 }
+
+export function matchResume(job_description, resume_text) {
+  return request("/matcher", {
+    method: "POST",
+    headers: jsonHeaders,
+    body: JSON.stringify({ job_description, resume_text }),
+  });
+}
+
+export function getStats() {
+  return request("/applications/stats");
+}
